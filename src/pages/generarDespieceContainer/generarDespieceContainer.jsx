@@ -1,29 +1,53 @@
 import React, {useState, useEffect} from 'react';
 import './generarDespieceContainer.css';
 import {Layout} from '../../components/layout/layout';
+import { ListaOpcionesDespiece } from '../../components/listaOpcionesDespiece/listaOpcionesDespiece';
 import {ref, getDownloadURL} from "firebase/storage";
 import { storage } from "../../components/firebase/firebase";
-import { CarouselOpcionesDespiece } from '../../components/carouselOpcionesDespiece/carouselOpcionesDespiece';
+
 
 
 function GenerarDespieceContainer() {
 
+    //DEFINO EL STATE donde voy a guardar la lista de opciones con url de imagen
+    const [opcionesConUrl, setOpcionesConUrl] = useState([])
+    console.log("Opciones con url al principio: ", opcionesConUrl)
 
-      const opcionesModelosDespiece = [
-        {modelo: 'Consola Praga', imgPath: 'imagenes/PragaConsola3.PNG', imgUrl:"https://firebasestorage.googleapis.com/v0/b/fusion-interno.appspot.com/o/imagenes%2FPragaConsola3.PNG?alt=media&token=e85493cd-4e3e-47a7-8538-9406cf8e476e"},
-        {modelo: 'Mesa de luz Praga', imgPath: 'imagenes/PragaLuzGris4.PNG', imgUrl:"https://firebasestorage.googleapis.com/v0/b/fusion-interno.appspot.com/o/imagenes%2FPragaLuzGris4.PNG?alt=media&token=b2604699-3556-4ea6-99fd-dd44d7de7d68"},
-        {modelo: 'Consola Niza', imgPath: 'imagenes/NizaConsolaNegra.PNG', imgUrl:"https://firebasestorage.googleapis.com/v0/b/fusion-interno.appspot.com/o/imagenes%2FNizaConsolaNegra.PNG?alt=media&token=655f40c6-c29a-437f-9d7f-f614e4f0c527"},
-        {modelo: 'Consola Frank', imgPath: 'imagenes/FrankNegra.PNG', imgUrl:"https://firebasestorage.googleapis.com/v0/b/fusion-interno.appspot.com/o/imagenes%2FFrankNegra.PNG?alt=media&token=e817f335-7838-4ce9-acf0-46652c53bbf9"},
-        {modelo: 'Vajillero Niza', imgPath: 'imagenes/vajillero niza 4.jpg', imgUrl:"https://firebasestorage.googleapis.com/v0/b/fusion-interno.appspot.com/o/imagenes%2Fvajillero%20niza%204.jpg?alt=media&token=b297f965-0d7b-4dc9-a534-ff06c3dbe4a9"}
-      ];
+    //array con los datos que tengo inicialmente (las opciones sin url)
+    const opcionesInit = [
+      {modelo: 'Consola Praga', imgPath: 'imagenes/despiece/praga_despiece.PNG', imgUrl:''},
+      {modelo: 'Mesa de luz Praga', imgPath: 'imagenes/despiece/praga_luz_despiece.PNG', imgUrl:''},
+      {modelo: 'Consola Niza', imgPath: 'imagenes/despiece/niza_despiece.PNG', imgUrl:''},
+      {modelo: 'Consola Frank', imgPath: 'imagenes/despiece/frank_despiece.PNG', imgUrl:''},
+      {modelo: 'Vajillero Niza', imgPath: 'imagenes/despiece/niza_vajillero_despiece.jpg', imgUrl:''}
+    ];
 
+    //efecto que se dispara solo al montar el componente, para descargar las url de las imagenes
+    //y almacenarlas con los otros datos en el state "opcionesConUrl"
+  
+    useEffect(() => {
+      const traerUrls = async () => {
+        let opcionesTemp = [...opcionesInit]
+        for (const obj of opcionesTemp) {
+          var imgRef = ref(storage, obj.imgPath)
+          const url = await getDownloadURL(imgRef)
+          obj.imgUrl = url;
+        }
+        setOpcionesConUrl(opcionesTemp)
+      }
+      traerUrls()
+      console.log("Se ejecutó el useEffect")
+    }, []);
 
+  
+    console.log("opcionesInit: ", opcionesInit)
+    console.log("opcionesConUrl: ", opcionesConUrl)
+  
+  
     return (
         <Layout>
             <div>
-                <h1>Página de generación de despieces</h1>
-
-                <CarouselOpcionesDespiece opcionesDespiece={opcionesModelosDespiece}/>
+                <ListaOpcionesDespiece opcionesDespiece={opcionesConUrl}/>
             </div>
         </Layout>
     )

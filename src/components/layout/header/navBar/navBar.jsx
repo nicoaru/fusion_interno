@@ -17,9 +17,8 @@ import { Link, NavLink } from 'react-router-dom';
 const pages = [
               {page: 'Home', to: '/'}, 
               {page: 'Cargar Pedido', to: '/carga-pedido'}, 
-              {page: 'Ver Pedidos', to: '/ver-pedido'},
+              {page: 'Ver Pedidos', to: '/pedidos'},
               {page: 'Generar Despiece', to: 'generar-despiece'},
-              {page: 'Fallado Generar Despiece', to: 'fallado-generar-despiece'}
             ];
 
 function NavBar() {
