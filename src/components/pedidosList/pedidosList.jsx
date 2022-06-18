@@ -22,7 +22,8 @@ function PedidosList({ loading, muebles, error }) {
     const rows = muebles.map((obj, index) => {
         return         { id: obj.id, 
                         estado: obj.estado.actual,
-                        entrega: generateDate(obj.fechaEntrega), 
+                        entrega: obj.fechaEntrega, 
+                        // entrega: generateDate(obj.fechaEntrega), 
                         modelo: obj.modelo, 
                         medida: `${obj.medidaTotal.largo} x ${obj.medidaTotal.alto} x ${obj.medidaTotal.profundidad}`, 
                         color: `${obj.color.codigo} ${obj.color.referencia}`, 
@@ -77,8 +78,8 @@ function PedidosList({ loading, muebles, error }) {
                         getRowHeight={() => 'auto'}
                         rows={rows}
                         columns={columns}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
+                        pageSize={10}
+                        rowsPerPageOptions={[5, 10, 15, 20]}
                         checkboxSelection
                     />
                     : <div> Loading </div>
