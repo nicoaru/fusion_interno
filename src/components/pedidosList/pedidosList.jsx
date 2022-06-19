@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import './pedidosList.css';
 import { Stack, Box, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -68,6 +68,7 @@ function PedidosList({ loading, muebles, error }) {
         { field: 'notas', headerName: 'Notas', minWidth: 150, flex: 1 }
     ];
 
+    const [pageSize, setPageSize] = useState(5);
 
     return (
         <div>
@@ -75,11 +76,18 @@ function PedidosList({ loading, muebles, error }) {
                 {
                     rows.length > 0 ?
                     <DataGrid
+                        sx={{ m: 2,
+                            '.MuiDataGrid-cell': { py: '8px', px: '4px' },
+                            '.rowGridPedidos': {minHeight: '52px !important'}
+                        }}
                         getRowHeight={() => 'auto'}
+                        getRowClassName={(params) => 'rowGridPedidos'}                        
                         rows={rows}
                         columns={columns}
-                        pageSize={10}
-                        rowsPerPageOptions={[5, 10, 15, 20]}
+                        pageSize={pageSize}
+                        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                        rowsPerPageOptions={[5, 10, 15, 20, 50, 100]}
+                        pagination
                         checkboxSelection
                     />
                     : <div> Loading </div>

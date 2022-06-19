@@ -1,9 +1,8 @@
 import React, {useState} from "react";
 import './cargaPedidos.css';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Stack, Box, Typography, Button } from '@mui/material';
-import { DataGrid,  GridEditSingleSelectCell, useGridApiContext, } from '@mui/x-data-grid';
+import { DataGrid,  GridEditSingleSelectCell, useGridApiContext, GridActionsCellItem } from '@mui/x-data-grid';
 import check from '../../recursos/check.png'
 import cross from '../../recursos/cross.png'
 import { MuebleEncargado } from "../../clases/clases"
@@ -14,15 +13,17 @@ import { MuebleEncargado } from "../../clases/clases"
 function CargaPedidos({cargarPedidosHandler}) {
     
 
-
-        // Funcion processRowUpdate y auxiliares
+// Funcion processRowUpdate y auxiliares
+    // fn aux1
     const alreadyExists = (newValuesRow) => {
         console.log("alreadyExists? => ", (rows[rows.length-1].id !== newValuesRow.id))
         return (rows[rows.length-1].id !== newValuesRow.id)
     }
+    //fn aux2
     const updateRow = (newValuesRow, rowsArray) => {
         return rowsArray.map(row => row.id === newValuesRow.id ? newValuesRow : row)
     }
+    //fn aux3
     const addEmptyRow = (rowsArray) => {
         const emptyRow = { id: idGenerator(),
             fechaPedido: " ",
@@ -48,6 +49,7 @@ function CargaPedidos({cargarPedidosHandler}) {
 
         return [...rowsArray, emptyRow]
     }
+    // fn processUpdate es llamada en DataGrid -> processRowUpdate
     function processUpdate(newValuesRow) {
         let rowsTemp = rows
         rowsTemp = updateRow(newValuesRow, rowsTemp);
@@ -57,16 +59,25 @@ function CargaPedidos({cargarPedidosHandler}) {
         setRows(rowsTemp)
         return newValuesRow
     }
-        //  //
+//
 
+// fn deleteRow
+    const deleteRow = (id) => {
+          setRows(rows.filter((row) => row.id !== id));
+        };
+
+// State idCount & idGenerator son usados para generar un nuevo id para cada row que se agrega
     const [idCount, setIdCount] = useState(1)
-   
+
     const idGenerator = () => {
         const newId = idCount+1
         setIdCount(newId)
         console.log('newId => ', newId)
         return newId
     }
+//
+
+// State rows y la row inicial vacía para empezar a cargar datos
     const initialRows = [{ id: idCount,
         fechaPedido: " ",
         fechaEntrega: '', 
@@ -87,13 +98,46 @@ function CargaPedidos({cargarPedidosHandler}) {
         alturaPata: '',
         colorPata: '',
         notas: ''
-    }]
-    const [rows, setRows] = useState(initialRows)
+    }];
 
+    const [rows, setRows] = useState(initialRows)
+//
+
+// componente para editar el campo Linea, llamado en Columns -> Linea -> renderEditCell
+    const CustomEditComponent_Linea = (props) => {
+        const apiRef = useGridApiContext();
+
+        const handleValueChange = async () => {
+        await apiRef.current.setEditCellValue({
+            id: props.id,
+            field: 'modelo',
+            value: '',
+        });
+        };
+        return <GridEditSingleSelectCell onValueChange={handleValueChange} {...props} />
+    };
+  
+//
 
     console.log('rows => ', rows)
 
+// Columns definition
     const columns = [
+        { 
+            field: 'actionButtons', 
+            headerName: '', 
+            type: "actions", 
+            getActions: (params) => [
+                <GridActionsCellItem
+                  icon={<DeleteIcon />}
+                  label="Delete"
+                  onClick={() => deleteRow(params.id)}
+                />,
+            ],
+            width: 50,
+            headerAlign: "center", 
+            align: "center", 
+        },
         { 
             field: 'fechaPedido', 
             headerName: 'Fecha Pedido', 
@@ -128,7 +172,6 @@ function CargaPedidos({cargarPedidosHandler}) {
             valueOptions: [{value:true, label: "SI"}, {value: false, label: "NO"}], 
             align: "center", 
             renderCell: (params) => {
-                console.log("gridRenderCellParams => ", params);
                 if (params.value === true) { 
                     return <img src={check} alt="tick-icon"/> } 
                 else if (params.value === false) {
@@ -136,7 +179,6 @@ function CargaPedidos({cargarPedidosHandler}) {
                 else return " "
                 },
             valueFormatter: (params) => {
-                console.log("valueFormaterParams => ", params)
                 if (params.value === true) { 
                     return "SI" } 
                 else if (params.value === false) {
@@ -152,7 +194,7 @@ function CargaPedidos({cargarPedidosHandler}) {
             headerName: 'Linea', 
             type: "singleSelect", 
             valueOptions: ["Praga", "Niza", "Frank", "Buet", "Visby", "Otro"],    
-
+            renderEditCell: (params) => <CustomEditComponent_Linea {...params} />,
             headerAlign: "center", 
             align: "center",
             editable: true 
@@ -223,7 +265,7 @@ function CargaPedidos({cargarPedidosHandler}) {
             width: 150, 
             align: "center", 
             headerAlign: "center", 
-            ditable: true 
+            editable: true 
         },
         { 
             field: 'referenciaColor', 
@@ -306,6 +348,7 @@ function CargaPedidos({cargarPedidosHandler}) {
             editable: true 
         }
     ];
+//
 
 
     return (
@@ -314,14 +357,13 @@ function CargaPedidos({cargarPedidosHandler}) {
                 <DataGrid
                     sx={{ m: 2,
                         '.MuiDataGrid-cell': { py: '8px', px: '4px' },
-                        '.rowGrid': {minHeight: '52px !important'}
+                        '.MuiDataGrid-cell.MuiDataGrid-cell--editing': { py: '8px', px: '4px' },
+                        '.rowGridCarga': {minHeight: '52px !important'}
                       }}
                     getRowHeight={() => 'auto'}
-                    getRowClassName={(params) => 'rowGrid'}
+                    getRowClassName={(params) => 'rowGridCarga'}
                     rows={rows}
                     columns={columns}
-                    pageSize={15}
-                    rowsPerPageOptions={[5, 10, 15, 20]}
                     disableSelectionOnClick
                     experimentalFeatures={{ newEditingApi: true }}
                     editMode='row'
@@ -330,7 +372,6 @@ function CargaPedidos({cargarPedidosHandler}) {
                 
             </div>
             <Button color="primary"  onClick={() => {
-                setRows(initialRows)
                 cargarPedidosHandler(rows.filter(obj => rows.indexOf(obj) !== rows.length-1))}}>
                 CARGAR LOS PEDIDOS
             </Button>
